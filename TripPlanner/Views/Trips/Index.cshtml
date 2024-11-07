@@ -1,0 +1,139 @@
+﻿@model IEnumerable<TripPlanner.Models.Trip>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+    .header {
+        background-color: #808891;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            font-weight: normal;
+        }
+
+    .wrapper {
+        padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .add-trip {
+        margin: 15px 0;
+    }
+
+        .add-trip a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+        .table th {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            vertical-align: top;
+        }
+
+    .accommodation-details {
+        margin-top: 5px;
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .things-to-do div {
+        margin-bottom: 4px;
+    }
+
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+</style>
+<script>
+    console.log("Test")
+</script>
+
+<div class="header">
+    <h1>My Trip Log</h1>
+</div>
+<div  class="wrapper">
+<div class="add-trip">
+    <a asp-action="Create">Add Trip</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Destination</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Accommodations</th>
+            <th>Things To Do</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Destination)
+                </td>
+                <td>
+                    @item.StartDate.ToString("M/d/yyyy")
+                </td>
+                <td>
+                    @item.EndDate.ToString("M/d/yyyy")
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Accomodation))
+                    {
+                        <div>@item.Accomodation</div>
+                        @if (!string.IsNullOrEmpty(item.AccomodationPhone) || !string.IsNullOrEmpty(item.AccomodationEmail))
+                        {
+                            <div class="accommodation-details">
+                                Phone: @item.AccomodationPhone | Email: @item.AccomodationEmail
+                            </div>
+                        }
+                    }
+                </td>
+                <td>
+                    <div class="things-to-do">
+                        @if (!string.IsNullOrEmpty(item.ThingsToDo1))
+                        {
+                            <div>@item.ThingsToDo1</div>
+                        }
+                        @if (!string.IsNullOrEmpty(item.ThingsToDo2))
+                        {
+                            <div>@item.ThingsToDo2</div>
+                        }
+                        @if (!string.IsNullOrEmpty(item.ThingsToDo3))
+                        {
+                            <div>@item.ThingsToDo3</div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

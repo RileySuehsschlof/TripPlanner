@@ -1,8 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using TripPlanner.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddDbContext<TripDbContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("TripDbContext")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -20,8 +25,12 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Trips}/{action=Index}/{id?}");
+
 
 app.Run();

@@ -1,0 +1,33 @@
+﻿@model TripPlanner.Models.Trip
+@{
+    ViewData["Title"] = "Add Things To Do";
+}
+
+<div class="header">
+    <h1>My Trip Log</h1>
+</div>
+
+<div class="wrapper form-page">
+    <h2>Add Things To Do i</h2>
+    <form asp-action="AddThingsToDo" method="post">
+        <div class="form-group">
+            <label asp-for="ThingsToDo1">Thing to do</label>
+            <input asp-for="ThingsToDo1" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ThingsToDo2">Thing to do</label>
+            <input asp-for="ThingsToDo2" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ThingsToDo3">Thing to do</label>
+            <input asp-for="ThingsToDo3" class="form-control" />
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,33 @@
+﻿@model TripPlanner.Models.Trip
+@{
+    ViewData["Title"] = "Add Trip";
+}
+
+<div class="header">
+    <h1>My Trip Log</h1>
+</div>
+
+<div class="wrapper form-page">
+    <h2>Add Trip Destination and Dates</h2>
+    <form asp-action="AddBasicInfo" method="post">
+        <div class="form-group">
+            <label asp-for="Destination">Destination</label>
+            <input asp-for="Destination" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StartDate">Start Date</label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EndDate">End Date</label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Next</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
