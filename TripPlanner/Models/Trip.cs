@@ -9,7 +9,7 @@ namespace TripPlanner.Models
 
 
         [Required(ErrorMessage = "Destination is required")]
-        public string? Destination { get; set; }
+        public string Destination { get; set; }
 
 
         [Required(ErrorMessage = "Start date is required")]

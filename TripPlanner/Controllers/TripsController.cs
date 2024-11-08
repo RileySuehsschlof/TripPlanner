@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using TripPlanner.Data;
 using TripPlanner.Models;
 
@@ -25,131 +28,106 @@ namespace TripPlanner.Controllers
             return View(await _context.Trips.ToListAsync());
         }
 
-        // GET: Trips/Create - First step
-        public IActionResult Create()
+        
+        // GET: Trip/TripBasicInfo
+        public IActionResult TripBasicInfo()
         {
-            return View("TripBasicInfo");
+            // Retrieve and deserialize the Trip data from TempData
+            if (TempData["TripData"] != null)
+            {
+                var tripData = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+                TempData.Keep("TripData"); // Preserve TempData for future requests
+                return View(tripData);
+            }
+
+            return RedirectToAction("Create"); // Redirect back if no TempData found
         }
 
-        // POST: Trips/AddBasicInfo
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult AddBasicInfo([Bind("Destination,StartDate,EndDate")] Trip trip)
         {
             if (ModelState.IsValid)
             {
-                TempData["TripBasicInfo"] = JsonSerializer.Serialize(trip);
-                return RedirectToAction(nameof(AddAccommodation));
+                // Use Peek to read without marking for deletion
+                var tripJson = TempData.Peek("TripData")?.ToString();
+                if (tripJson != null)
+                {
+                    var existingTrip = JsonConvert.DeserializeObject<Trip>(tripJson);
+
+                    // Update the existing trip with new values
+                    existingTrip.Destination = trip.Destination;
+                    existingTrip.StartDate = trip.StartDate;
+                    existingTrip.EndDate = trip.EndDate;
+
+                    // Store the updated data
+                    TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
+
+                    return RedirectToAction("Accomodation");
+                }
             }
+
             return View("TripBasicInfo", trip);
         }
 
-        // GET: Trips/AddAccommodation - Second step
-        public IActionResult AddAccommodation()
+        // GET: Trip/Accomodation
+        public IActionResult Accomodation()
         {
-            var tripJson = TempData["TripBasicInfo"] as string;
-            if (tripJson == null)
+            // Retrieve and deserialize Trip data from TempData if needed
+            TempData.Keep("TripData");
+            if (TempData["TripData"] != null)
             {
-                return RedirectToAction(nameof(Create));
+                var tripData = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+                TempData.Keep("TripData"); // Preserve TempData for future requests
+                return View("AccomodationInfo",tripData);
             }
-
-            var trip = JsonSerializer.Deserialize<Trip>(tripJson);
-            TempData.Keep("TripBasicInfo"); // Keep the data for the next step
-            return View("AccomodationInfo", trip);
+            Debug.WriteLine("Maybe");
+            return RedirectToAction("Create");
         }
-
-        // POST: Trips/AddAccommodation
+        // POST: Trip/AddAccomodationInfo
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult AddAccommodation([Bind("Accomodation,AccomodationPhone,AccomodationEmail")] Trip tripAccom)
+        public IActionResult AddAccomodationInfo([Bind("AccomodationPhone,AccomodationEmail,Accomodation,Destination,StartDate,EndDate")] Trip trip)
         {
-           
-            if (ModelState.IsValid)
+          
+                if (ModelState.IsValid)
             {
-                var tripJson = TempData["TripBasicInfo"] as string;
-                var trip = JsonSerializer.Deserialize<Trip>(tripJson);
-                TempData.Keep("TripBasicInfo");
-                if (string.IsNullOrEmpty(tripJson))
+                if (TempData["TripData"] != null)
                 {
-                    // Handle the case where TempData is empty or null.
-                    ModelState.AddModelError(string.Empty, "TripBasicInfo data is missing.");
-                    return View("TripBasicInfo");
+                    var existingTrip = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+
+                    // Update the existing trip with accommodation details
+                    existingTrip.AccomodationPhone = trip.AccomodationPhone;
+                    existingTrip.AccomodationEmail = trip.AccomodationEmail;
+                    //existingTrip.Destination = trip.Destination;
+                    //existingTrip.StartDate = trip.StartDate;
+                    //existingTrip.EndDate = trip.EndDate;
+
+                    // Re-store the updated trip data in TempData
+                    TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
+                    TempData.Keep("TripData"); // Preserve TempData for future requests
+                    Debug.WriteLine("Check");
+                    // Redirect to the next step, e.g., ThingsToDo
+                    return RedirectToAction("ThingsToDo");
                 }
-
-                // Combine basic info with accommodation info
-                trip.Accomodation = tripAccom.Accomodation;
-                trip.AccomodationPhone = tripAccom.AccomodationPhone;
-                trip.AccomodationEmail = tripAccom.AccomodationEmail;
-                trip.TripId = 2;
-                TempData["TripAccomodation"] = JsonSerializer.Serialize(trip);
-                if (tripJson == null)
-                {
-                    Console.WriteLine("No data in TempData.");
-                    return RedirectToAction(nameof(Create)); // Redirect if no data found
-                }
-                return RedirectToAction(nameof(AddThingsToDo));
             }
-            return View("AccomodationInfo", tripAccom);
+            Debug.WriteLine("Made it here");
+            return View("AccomodationInfo", trip); // Return to the same view if ModelState is not valid
         }
 
-     
 
 
-        // POST: Trips/AddThingsToDo
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddThingsToDo([Bind("ThingsToDo1,ThingsToDo2,ThingsToDo3")] Trip tripThings)
-        {
-            Console.WriteLine("Here");
-            if (ModelState.IsValid)
-            {
-                var tripJson = TempData["TripAccomodation"] as string;
-                var trip = JsonSerializer.Deserialize<Trip>(tripJson);
-
-                // Add things to do to the complete trip
-                trip.ThingsToDo1 = tripThings.ThingsToDo1;
-                trip.ThingsToDo2 = tripThings.ThingsToDo2;
-                trip.ThingsToDo3 = tripThings.ThingsToDo3;
-                Console.WriteLine(trip.Destination);
-
-                _context.Add(trip);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View("ThingsToDo", tripThings);
-        }
-        // GET: Trips/AddThingsToDo - Third step
-        public IActionResult AddThingsToDo()
-        {
-            var tripJson = TempData["TripAccomodation"] as string;
-            if (tripJson == null)
-            {
-                return RedirectToAction(nameof(Create)); // Redirect if no data found
-            }
 
 
-            var trip = JsonSerializer.Deserialize<Trip>(tripJson);
-            TempData.Keep("TripAccomodation"); // Keep data for the post action
-            return View("ThingsToDo", trip);
-        }
 
-        // GET: Trips/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var trip = await _context.Trips
-                .FirstOrDefaultAsync(m => m.TripId == id);
-            if (trip == null)
-            {
-                return NotFound();
-            }
 
-            return View(trip);
-        }
+
+
+
+
+
+
+
 
         // GET: Trips/Edit/5
         public async Task<IActionResult> Edit(int? id)

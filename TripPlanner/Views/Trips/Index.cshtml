@@ -54,7 +54,7 @@
             vertical-align: top;
         }
 
-    .accommodation-details {
+    .accomodation-details {
         margin-top: 5px;
         font-size: 0.9em;
         color: #666;
@@ -78,7 +78,7 @@
 </div>
 <div  class="wrapper">
 <div class="add-trip">
-    <a asp-action="Create">Add Trip</a>
+    <a asp-action="TripBasicInfo">Add Trip</a>
 </div>
 
 <table class="table">
@@ -87,7 +87,7 @@
             <th>Destination</th>
             <th>Start Date</th>
             <th>End Date</th>
-            <th>Accommodations</th>
+            <th>Accomodations</th>
             <th>Things To Do</th>
         </tr>
     </thead>
@@ -110,7 +110,7 @@
                         <div>@item.Accomodation</div>
                         @if (!string.IsNullOrEmpty(item.AccomodationPhone) || !string.IsNullOrEmpty(item.AccomodationEmail))
                         {
-                            <div class="accommodation-details">
+                            <div class="accomodation-details">
                                 Phone: @item.AccomodationPhone | Email: @item.AccomodationEmail
                             </div>
                         }

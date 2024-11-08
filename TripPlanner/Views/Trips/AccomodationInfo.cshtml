@@ -1,15 +1,20 @@
 ﻿@model TripPlanner.Models.Trip
 @{
-    ViewData["Title"] = "Add Accommodation";
+    ViewData["Title"] = "Add Accomodation";
 }
+<script>
+    console.log("Hello from accomodationinfo");
+    console.log("Test from Accomodation");
+    console.log("@Model.Destination");
 
+</script>
 <div class="header">
     <h1>My Trip Log</h1>
 </div>
 
 <div class="wrapper form-page">
-    <h2>Add Info for @Model.Accomodation</h2>
-    <form asp-action="AddThingsToDo" method="post">
+    <h2>Add Info for </h2>
+    <form asp-action="AddAccomodationInfo" method="post">
         <div class="form-group">
             <label asp-for="AccomodationPhone">Phone Number</label>
             <input asp-for="AccomodationPhone" class="form-control" />
