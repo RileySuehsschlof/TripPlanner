@@ -1,11 +1,9 @@
-﻿@model TripPlanner.Models.Trip
+﻿@model TripPlanner.Models.TripViewModel
 @{
     ViewData["Title"] = "Add Things To Do";
 }
 <script>
-    console.log("ThingsToDoFile");
-    console.log("@Model.Destination")
-    console.log("@Model.AccomodationEmail")
+    console.log("hi from things to do")
 </script>
 
 <div class="header">
@@ -14,7 +12,7 @@
 
 <div class="wrapper form-page">
     <h2>Add Things To Do i</h2>
-    <form asp-action="AddThingsToDo" method="post">
+    <form asp-action="ThingsToDo" method="post">
         <div class="form-group">
             <label asp-for="ThingsToDo1">Thing to do</label>
             <input asp-for="ThingsToDo1" class="form-control" />

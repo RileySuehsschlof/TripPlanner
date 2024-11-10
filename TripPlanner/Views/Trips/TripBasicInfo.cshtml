@@ -1,4 +1,4 @@
-﻿@model TripPlanner.Models.Trip
+﻿@model TripPlanner.Models.TripViewModel
 @{
     ViewData["Title"] = "Add Trip";
 }
@@ -9,7 +9,8 @@
 
 <div class="wrapper form-page">
     <h2>Add Trip Destination and Dates</h2>
-    <form asp-action="AddBasicInfo" method="post">
+    @* <form asp-action="AddBasicInfo" method="post"> *@
+    <form asp-action="TripBasicInfo" method="post">
         <div class="form-group">
             <label asp-for="Destination">Destination</label>
             <input asp-for="Destination" class="form-control" />

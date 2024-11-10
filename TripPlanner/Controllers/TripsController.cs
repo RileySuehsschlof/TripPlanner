@@ -13,6 +13,7 @@ using TripPlanner.Models;
 
 namespace TripPlanner.Controllers
 {
+    
     public class TripsController : Controller
     {
         private readonly TripDbContext _context;
@@ -28,91 +29,222 @@ namespace TripPlanner.Controllers
             return View(await _context.Trips.ToListAsync());
         }
 
-        
+
         // GET: Trip/TripBasicInfo
+        [HttpGet]
         public IActionResult TripBasicInfo()
         {
-            // Retrieve and deserialize the Trip data from TempData
+            var model = new TripViewModel();
+
+            // Check if TempData has existing trip data
             if (TempData["TripData"] != null)
             {
-                var tripData = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
-                TempData.Keep("TripData"); // Preserve TempData for future requests
-                return View(tripData);
+                var tripData = JsonConvert.DeserializeObject<TripViewModel>(TempData["TripData"].ToString());
+                model = tripData; // Populate the view model with TempData
+                TempData.Keep("TripData"); // Keep TempData for future requests
             }
 
-            return RedirectToAction("Create"); // Redirect back if no TempData found
+            return View(model); // Pass the ViewModel to the view
         }
-
-
+        //[HttpPost]
+        //public IActionResult TripBasicInfo(Trip trip)
+        //{
+        //    TempData["Trip"] = trip;
+        //    return View("AccomodationInfo");
+        //}
         [HttpPost]
-        public IActionResult AddBasicInfo([Bind("Destination,StartDate,EndDate")] Trip trip)
+        public IActionResult TripBasicInfo(TripViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Use Peek to read without marking for deletion
-                var tripJson = TempData.Peek("TripData")?.ToString();
-                if (tripJson != null)
-                {
-                    var existingTrip = JsonConvert.DeserializeObject<Trip>(tripJson);
+                // Serialize model and store in TempData
+                TempData["TripData"] = JsonConvert.SerializeObject(model);
+                TempData.Keep("TripData");
 
-                    // Update the existing trip with new values
-                    existingTrip.Destination = trip.Destination;
-                    existingTrip.StartDate = trip.StartDate;
-                    existingTrip.EndDate = trip.EndDate;
-
-                    // Store the updated data
-                    TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
-
-                    return RedirectToAction("Accomodation");
-                }
+                // Redirect to AccomodationInfo action
+                return RedirectToAction("AccomodationInfo");
             }
 
-            return View("TripBasicInfo", trip);
+            // Return to the same view if model is invalid
+            return View(model);
         }
 
-        // GET: Trip/Accomodation
-        public IActionResult Accomodation()
+        [HttpGet]
+        public IActionResult AccomodationInfo()
         {
-            // Retrieve and deserialize Trip data from TempData if needed
-            TempData.Keep("TripData");
-            if (TempData["TripData"] != null)
+            var model = new TripViewModel();
+
+            // Retrieve the Trip data from TempData
+            var tripData = TempData.Peek("TripData") as string;
+            TempData.Keep("TripData"); // Keep TempData for the next request
+
+            if (!string.IsNullOrEmpty(tripData))
             {
-                var tripData = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
-                TempData.Keep("TripData"); // Preserve TempData for future requests
-                return View("AccomodationInfo",tripData);
+                model = JsonConvert.DeserializeObject<TripViewModel>(tripData);
             }
-            Debug.WriteLine("Maybe");
-            return RedirectToAction("Create");
+
+            return View(model); // Pass the ViewModel to the view
         }
-        // POST: Trip/AddAccomodationInfo
+
         [HttpPost]
-        public IActionResult AddAccomodationInfo([Bind("AccomodationPhone,AccomodationEmail,Accomodation,Destination,StartDate,EndDate")] Trip trip)
+        public IActionResult AccomodationInfo(TripViewModel model)
         {
-          
-                if (ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                if (TempData["TripData"] != null)
+                // Retrieve the existing trip data from TempData and update it with new accommodation info
+                var tripData = TempData.Peek("TripData") as string;
+                TempData.Keep("TripData");
+
+                if (!string.IsNullOrEmpty(tripData))
                 {
-                    var existingTrip = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+                    var existingTrip = JsonConvert.DeserializeObject<TripViewModel>(tripData);
+                    existingTrip.AccomodationPhone = model.AccomodationPhone;
+                    existingTrip.AccomodationEmail = model.AccomodationEmail;
 
-                    // Update the existing trip with accommodation details
-                    existingTrip.AccomodationPhone = trip.AccomodationPhone;
-                    existingTrip.AccomodationEmail = trip.AccomodationEmail;
-                    //existingTrip.Destination = trip.Destination;
-                    //existingTrip.StartDate = trip.StartDate;
-                    //existingTrip.EndDate = trip.EndDate;
-
-                    // Re-store the updated trip data in TempData
+                    // Store the updated data back into TempData
                     TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
-                    TempData.Keep("TripData"); // Preserve TempData for future requests
-                    Debug.WriteLine("Check");
-                    // Redirect to the next step, e.g., ThingsToDo
+                    TempData.Keep("TripData");
+
+                    // Redirect to the next step (Things to do)
                     return RedirectToAction("ThingsToDo");
                 }
-            }
-            Debug.WriteLine("Made it here");
-            return View("AccomodationInfo", trip); // Return to the same view if ModelState is not valid
+            }// Return to the same view if model validation fails
+            return View(model);
         }
+
+
+        [HttpGet]
+        public IActionResult ThingsToDo()
+        {
+            return View();
+        }
+
+
+        // POST: Trip/ThingsToDo
+        [HttpPost]
+        public async Task<IActionResult> ThingsToDo(TripViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Retrieve the trip data from TempData
+                var tripData = TempData.Peek("TripData") as string;
+                TempData.Keep("TripData");
+
+                if (!string.IsNullOrEmpty(tripData))
+                {
+                    // Deserialize the trip data into the Trip
+                    var existingTrip = JsonConvert.DeserializeObject<TripViewModel>(tripData);
+
+                    // Update the existing trip with the new values (ThingsToDo)
+                    existingTrip.ThingsToDo1 = model.ThingsToDo1;
+                    existingTrip.ThingsToDo2 = model.ThingsToDo2;
+                    existingTrip.ThingsToDo3 = model.ThingsToDo3;
+
+                    
+                    // Now save the trip to the database
+                    var trip = new Trip
+                    {
+                        Destination = existingTrip.Destination,
+                        StartDate = (DateOnly)existingTrip.StartDate,
+                        EndDate = (DateOnly)existingTrip.EndDate,
+                        AccomodationPhone = existingTrip.AccomodationPhone,
+                        AccomodationEmail = existingTrip.AccomodationEmail,
+                        Accomodation = existingTrip.Accomodation,
+                        ThingsToDo1 = existingTrip.ThingsToDo1,
+                        ThingsToDo2 = existingTrip.ThingsToDo2,
+                        ThingsToDo3 = existingTrip.ThingsToDo3
+                    };
+
+                    // Add the trip to the database and save it
+                    _context.Trips.Add(trip);
+                    await _context.SaveChangesAsync();
+
+                    // Optionally, remove the trip data from TempData
+                    TempData.Remove("TripData");
+
+                    // Redirect back to the Index page after saving the data
+                    return RedirectToAction("Index");
+                }
+            }
+
+            // Return to the same view if the model is invalid
+            return View(model);
+        }
+
+
+
+
+        //[HttpPost]
+        //public IActionResult AddBasicInfo([Bind("Destination,StartDate,EndDate")] Trip trip)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        // Use Peek to read without marking for deletion
+        //        var tripJson = TempData.Peek("TripData")?.ToString();
+        //        if (tripJson != null)
+        //        {
+        //            var existingTrip = JsonConvert.DeserializeObject<Trip>(tripJson);
+
+        //            // Update the existing trip with new values
+        //            existingTrip.Destination = trip.Destination;
+        //            existingTrip.StartDate = trip.StartDate;
+        //            existingTrip.EndDate = trip.EndDate;
+
+        //            // Store the updated data
+        //            TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
+
+        //            return RedirectToAction("Accomodation");
+        //        }
+        //    }
+
+        //    return View("TripBasicInfo", trip);
+        //}
+
+        // GET: Trip/Accomodation
+        //public IActionResult Accomodation()
+        //{
+        //    // Retrieve and deserialize Trip data from TempData if needed
+        //    TempData.Keep("TripData");
+        //    if (TempData["TripData"] != null)
+        //    {
+        //        var tripData = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+        //        TempData.Keep("TripData"); // Preserve TempData for future requests
+        //        return View("AccomodationInfo",tripData);
+        //    }
+        //    Debug.WriteLine("Maybe");
+        //    return RedirectToAction("Create");
+        //}
+        // POST: Trip/AddAccomodationInfo
+
+
+        //[HttpPost]
+        //public IActionResult AddAccomodationInfo([Bind("AccomodationPhone,AccomodationEmail,Accomodation,Destination,StartDate,EndDate")] Trip trip)
+        //{
+
+        //        if (ModelState.IsValid)
+        //    {
+        //        if (TempData["TripData"] != null)
+        //        {
+        //            var existingTrip = JsonConvert.DeserializeObject<Trip>(TempData["TripData"].ToString());
+
+        //            // Update the existing trip with accommodation details
+        //            existingTrip.AccomodationPhone = trip.AccomodationPhone;
+        //            existingTrip.AccomodationEmail = trip.AccomodationEmail;
+        //            //existingTrip.Destination = trip.Destination;
+        //            //existingTrip.StartDate = trip.StartDate;
+        //            //existingTrip.EndDate = trip.EndDate;
+
+        //            // Re-store the updated trip data in TempData
+        //            TempData["TripData"] = JsonConvert.SerializeObject(existingTrip);
+        //            TempData.Keep("TripData"); // Preserve TempData for future requests
+        //            Debug.WriteLine("Check");
+        //            // Redirect to the next step, e.g., ThingsToDo
+        //            return RedirectToAction("ThingsToDo");
+        //        }
+        //    }
+        //    Debug.WriteLine("Made it here");
+        //    return View("AccomodationInfo", trip); // Return to the same view if ModelState is not valid
+        //}
 
 
 
