@@ -30,7 +30,29 @@
             </div>
         </nav>
     </header> *@
+    <style>
+        .header {
+            background-color: #808891;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 2em;
+                font-weight: normal;
+            }
+    </style>
     <div class="container">
+        <div class="header">
+            <h1>My Trip Log</h1>
+        </div>
+        @if(ViewData["SubHeading"] != null)
+        {
+            <h2>@ViewData["SubHeading"]</h2>
+        }
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

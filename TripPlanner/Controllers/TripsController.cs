@@ -26,6 +26,7 @@ namespace TripPlanner.Controllers
         // GET: Trips
         public async Task<IActionResult> Index()
         {
+            TempData.Clear();
             return View(await _context.Trips.ToListAsync());
         }
 
@@ -34,17 +35,18 @@ namespace TripPlanner.Controllers
         [HttpGet]
         public IActionResult TripBasicInfo()
         {
-            var model = new TripViewModel();
+            //var model = new TripViewModel();
 
-            // Check if TempData has existing trip data
-            if (TempData["TripData"] != null)
-            {
-                var tripData = JsonConvert.DeserializeObject<TripViewModel>(TempData["TripData"].ToString());
-                model = tripData; // Populate the view model with TempData
-                TempData.Keep("TripData"); // Keep TempData for future requests
-            }
+            //// Check if TempData has existing trip data
+            //if (TempData["TripData"] != null)
+            //{
+            //    var tripData = JsonConvert.DeserializeObject<TripViewModel>(TempData["TripData"].ToString());
+            //    model = tripData; // Populate the view model with TempData
+            //    TempData.Keep("TripData"); // Keep TempData for future requests
+            //}
 
-            return View(model); // Pass the ViewModel to the view
+            //return View(model); // Pass the ViewModel to the view
+            return View();
         }
 
         [HttpPost]
@@ -76,9 +78,10 @@ namespace TripPlanner.Controllers
             if (!string.IsNullOrEmpty(tripData))
             {
                 model = JsonConvert.DeserializeObject<TripViewModel>(tripData);
+                ViewData["Accomodation"] = model.Accomodation;
             }
 
-            return View(model); // Pass the ViewModel to the view
+            return View();
         }
 
         [HttpPost]
@@ -111,8 +114,19 @@ namespace TripPlanner.Controllers
         [HttpGet]
         public IActionResult ThingsToDo()
         {
-            return View();
+            // Retrieve the Trip data from TempData
+            var tripData = TempData.Peek("TripData") as string;
+
+            // If there is trip data, deserialize it and set the location in ViewData
+            if (!string.IsNullOrEmpty(tripData))
+            {
+                var model = JsonConvert.DeserializeObject<TripViewModel>(tripData);
+                ViewData["Location"] = model.Destination;
+            }
+
+            return View(); 
         }
+
 
 
         // POST: Trip/ThingsToDo
@@ -155,7 +169,7 @@ namespace TripPlanner.Controllers
                     await _context.SaveChangesAsync();
 
                     // Optionally, remove the trip data from TempData
-                    TempData.Remove("TripData");
+                    TempData.Clear();
 
                     // Redirect back to the Index page after saving the data
                     return RedirectToAction("Index");

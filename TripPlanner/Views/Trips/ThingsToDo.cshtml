@@ -1,17 +1,21 @@
 ﻿@model TripPlanner.Models.TripViewModel
 @{
     ViewData["Title"] = "Add Things To Do";
-}
-<script>
-    console.log("hi from things to do")
-</script>
+    // if(Model != null)
+    // {
+    //     ViewData["SubHeading"] = "Add Things To Do in " + Model.Destination;
+    // }
+    if (ViewData["Location"] != null)
+    {
+        ViewData["SubHeading"] = "Add Things To Do in " + ViewData["Location"];
+    }
+    
 
-<div class="header">
-    <h1>My Trip Log</h1>
-</div>
+}
+
+
 
 <div class="wrapper form-page">
-    <h2>Add Things To Do i</h2>
     <form asp-action="ThingsToDo" method="post">
         <div class="form-group">
             <label asp-for="ThingsToDo1">Thing to do</label>
