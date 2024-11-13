@@ -110,13 +110,15 @@ namespace TripPlanner.Controllers
             var tripData = TempData.Peek("TripData") as string;
             TempData.Keep("TripData"); // Keep TempData for the next request
 
+
+            ViewData["Accomodation"] = model.Accomodation;
             //getting the accomodation from the last form
             if (!string.IsNullOrEmpty(tripData))
             {
                 model = JsonConvert.DeserializeObject<TripViewModel>(tripData);
                 ViewData["Accomodation"] = model.Accomodation;
             }
-
+            
             return View();
         }
 
@@ -128,6 +130,7 @@ namespace TripPlanner.Controllers
                 // Retrieve the existing trip data from TempData and update it with new accommodation info
                 var tripData = TempData.Peek("TripData") as string;
                 TempData.Keep("TripData");
+
 
                 //an arry to store our errormessages
                 List<string> errorMessages = new List<string>();
@@ -151,7 +154,8 @@ namespace TripPlanner.Controllers
                 if (errorMessages.Any())
                 {
                     ViewBag.ErrorMessages = errorMessages;
-                    return View(model); // Return the same view to show the errors
+           
+
                 }
 
 
@@ -166,8 +170,16 @@ namespace TripPlanner.Controllers
                     TempData.Keep("TripData");
 
                     // Redirect to the next step (Things to do)
+
                     return RedirectToAction("ThingsToDo");
                 }
+                //specifically needed to ensure that accomodation will persist even when validation errors occur
+                else
+                {
+                    var existingTrip = JsonConvert.DeserializeObject<TripViewModel>(tripData);
+                    TempData["acc"] = existingTrip.Accomodation;
+                }
+                
             }// Return to the same view if model validation fails
             return View(model);
         }

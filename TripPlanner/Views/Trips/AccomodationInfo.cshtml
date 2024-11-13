@@ -1,16 +1,24 @@
 ﻿@model TripPlanner.Models.TripViewModel
 @{
     ViewData["Title"] = "Add Accomodation";
+
+    //needed to handle when validation errors occur
     if (ViewData["Accomodation"] != null)
     {
         ViewData["SubHeading"] = "Add Info for " + ViewData["Accomodation"];
     }
+    else
+    {
+        ViewData["SubHeading"] = "Add Info for " + TempData["acc"];
+    }
     
+
 }
 
 
 
 <div class="wrapper form-page">
+    
     
     <form asp-action="AccomodationInfo" method="post">
         <div class="form-group">
