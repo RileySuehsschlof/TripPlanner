@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mail;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using Newtonsoft.Json;
 using TripPlanner.Data;
 using TripPlanner.Models;
@@ -126,7 +129,33 @@ namespace TripPlanner.Controllers
                 var tripData = TempData.Peek("TripData") as string;
                 TempData.Keep("TripData");
 
-                if (!string.IsNullOrEmpty(tripData))
+                //an arry to store our errormessages
+                List<string> errorMessages = new List<string>();
+
+                //the pattern we are using for checking the phone number
+                const string phonePattern = @"^(\d{3}[-\s]?)?(\d{3}[-\s]?)?\d{4}$";
+
+
+                if (model.AccomodationPhone != null && !Regex.IsMatch(model.AccomodationPhone, phonePattern))
+                {
+                    errorMessages.Add("Phone number is incorrect");
+                }
+
+                //trying to see if we can turn it into a MailAddress object to test if it is a valid email
+                if (model.AccomodationEmail != null && !MailAddress.TryCreate(model.AccomodationEmail, out _))
+                {
+                    errorMessages.Add("Email is incorrect");
+                }
+                
+
+                if (errorMessages.Any())
+                {
+                    ViewBag.ErrorMessages = errorMessages;
+                    return View(model); // Return the same view to show the errors
+                }
+
+
+                if (!string.IsNullOrEmpty(tripData) && ViewBag.ErrorMessages ==null)
                 {
                     var existingTrip = JsonConvert.DeserializeObject<TripViewModel>(tripData);
                     existingTrip.AccomodationPhone = model.AccomodationPhone;
