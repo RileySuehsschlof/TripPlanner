@@ -44,6 +44,9 @@
                 font-size: 2em;
                 font-weight: normal;
             }
+            .Error{
+                color:red;
+            }
     </style>
     <div class="container">
         <div class="header">
@@ -52,6 +55,13 @@
         @if(ViewData["SubHeading"] != null)
         {
             <h2>@ViewData["SubHeading"]</h2>
+        }
+        @if (ViewBag.ErrorMessages != null)
+        {
+            foreach (var er in ViewBag.ErrorMessages)
+            {
+                <li class="Error">@er</li>
+            }
         }
         <main role="main" class="pb-3">
             @RenderBody()

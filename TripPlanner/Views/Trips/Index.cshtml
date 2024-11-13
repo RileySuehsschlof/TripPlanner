@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Index";
+    if (ViewData["Location"] != null)
+    {
+        ViewData["SubHeading"] = "Trip to "+ ViewData["Location"]+ " added";
+    }
 }
 
 <style>

@@ -26,6 +26,10 @@ namespace TripPlanner.Controllers
         // GET: Trips
         public async Task<IActionResult> Index()
         {
+            //set the location for if you had just completed creating a trip
+            ViewData["Location"] = TempData["Location"];
+
+            //clear all the temp data for the second time they create trip
             TempData.Clear();
             return View(await _context.Trips.ToListAsync());
         }
@@ -35,30 +39,58 @@ namespace TripPlanner.Controllers
         [HttpGet]
         public IActionResult TripBasicInfo()
         {
-            //var model = new TripViewModel();
-
-            //// Check if TempData has existing trip data
-            //if (TempData["TripData"] != null)
-            //{
-            //    var tripData = JsonConvert.DeserializeObject<TripViewModel>(TempData["TripData"].ToString());
-            //    model = tripData; // Populate the view model with TempData
-            //    TempData.Keep("TripData"); // Keep TempData for future requests
-            //}
-
-            //return View(model); // Pass the ViewModel to the view
             return View();
         }
 
         [HttpPost]
         public IActionResult TripBasicInfo(TripViewModel model)
         {
-            if (ModelState.IsValid)
+
+
+            List<string> errorMessages = new List<string>();
+
+            // Validation checks
+            if (model.Destination == null)
             {
+                errorMessages.Add("Destination is required");
+            }
+            if (model.StartDate == null)
+            {
+                errorMessages.Add("Start date is required");
+            }
+            if (model.EndDate == null)
+            {
+                errorMessages.Add("End date is required");
+            }
+            if (model.StartDate > model.EndDate)
+            {
+                errorMessages.Add("End date cannot be before start date");
+            }
+
+            // If there are validation errors, store them in ViewBag and return the same view
+            if (errorMessages.Any())
+            {
+                ViewBag.ErrorMessages = errorMessages;
+                return View(model); // Return the same view to show the errors
+            }
+            if (ModelState.IsValid && ViewBag.ErrorMessage == null)
+            {
+                
                 // Serialize model and store in TempData
                 TempData["TripData"] = JsonConvert.SerializeObject(model);
                 TempData.Keep("TripData");
 
+
+
+                
+
+                if (model.Accomodation == null)
+                {
+                    return RedirectToAction("ThingsToDo");
+                }
+
                 // Redirect to AccomodationInfo action
+                
                 return RedirectToAction("AccomodationInfo");
             }
 
@@ -75,6 +107,7 @@ namespace TripPlanner.Controllers
             var tripData = TempData.Peek("TripData") as string;
             TempData.Keep("TripData"); // Keep TempData for the next request
 
+            //getting the accomodation from the last form
             if (!string.IsNullOrEmpty(tripData))
             {
                 model = JsonConvert.DeserializeObject<TripViewModel>(tripData);
@@ -168,8 +201,8 @@ namespace TripPlanner.Controllers
                     _context.Trips.Add(trip);
                     await _context.SaveChangesAsync();
 
-                    // Optionally, remove the trip data from TempData
-                    TempData.Clear();
+                    
+                    TempData["Location"] = existingTrip.Destination;
 
                     // Redirect back to the Index page after saving the data
                     return RedirectToAction("Index");
